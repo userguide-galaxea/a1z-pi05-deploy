@@ -1,0 +1,16 @@
+# This file is part of Pi05_A1Z, licensed under the Galaxea Dynamics A1Z License Agreement.
+# See LICENSE.txt in the project root; upstream components retain their applicable licenses.
+
+# Separate Python 3.11 environment; never install into the π0.5 model environment.
+lerobot==0.3.3
+h5py==3.13.0
+# Pin the Arrow datasets API used by the v2.1 writer.
+datasets==3.6.0
+pyarrow==20.0.0
+pandas==2.2.3
+numpy==1.26.4
+opencv-python-headless==4.11.0.86
+av==15.1.0
+torch==2.7.1
+torchvision==0.22.1
+huggingface-hub==0.34.4

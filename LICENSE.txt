@@ -1,0 +1,87 @@
+Galaxea Dynamics A1Z LICENSE AGREEMENT
+
+Release Date: 3rd, Nov, 2026
+
+This Agreement is a legal contract. By reproducing, copying, modifying, distributing, performing, displaying or otherwise using any portion or element  of the Galaxea Dynamics A1Z Works, You will be deemed to have recognized and accepted the content of this Agreement, which is effective immediately.You are granted the License in consideration of Your acceptance of these terms and conditions, and Galaxea Dynamics grants You such License in consideration of benefits We receive from making the Galaxea Dynamics A1Z Materials available under these terms and conditions.
+
+1. DEFINITIONS
+
+1.1. “Licensor”,“Galaxea Dynamics”,“We” or “Us” shall mean Xinghaitu (Beijing) AI Technology Co., Ltd.，a Corporation of the People’s Republic of China and having an address of Building 14, Courtyard 3, Jinghai Fifth Road, Beijing, the People’s Republic of China.
+
+1.2. “Licensee”, "Recipient" or “you” means you, or your employer or any other person or entity (if you are entering into this Agreement on such person or entity’s behalf), of the age required under applicable laws, rules or regulations to provide legal consent and that has legal authority to bind your employer or such other person or entity if you are entering in this Agreement on their behalf.
+
+1.3. “Agreement” shall mean the terms and conditions for use, reproduction, copying, distribution, modification, performance and displaying of Galaxea Dynamics A1Z Works or any portion or element thereof set forth herein.
+
+1.4. “Galaxea Dynamics A1Z” shall mean the mechanical arm product named A1Z released by Galaxea Dynamics, and all technical solutions and knowledge related to the manufacture and use of this product, including hardware structure, component combination, specification parameters, software algorithm, interface information, data sets, etc.
+
+1.5. “Galaxea Dynamics A1Z Materials” shall mean, collectively, Galaxea Dynamics’s proprietary Galaxea Dynamics A1Z and Documentation (and any portion thereof) made available under this Agreement.
+
+1.6. "Documentation" shall mean the technical documents, specifications, manuals and documentation for Galaxea Dynamics A1Z made publicly available by Galaxea Dynamics, including: (i) Software Source Code, (ii) Hardware Design Files (schematics, CAD files, layout files, etc.), and (iii) Documentation and Data.
+
+1.7. “including”, when used in this Agreement, shall mean "including but not limited to," unless otherwise specifically stated.
+
+1.8. “Permitted Purpose” shall mean and is strictly limited to Academic Research, Personal Use, Education, and Evaluation. Academic Research means non-profit research conducted by a non-commercial academic institution. Personal Use means non-commercial use by an individual for private or personal purposes.
+
+1.9. “Commercial Use” shall mean any use, directly or indirectly, for commercial advantage or monetary compensation, including: (i) Selling, leasing, licensing, or otherwise transferring the Galaxea Dynamics A1Z Materials or any derivative work thereof; (ii) Manufacturing, selling, or offering to sell any product or service that incorporates, utilizes, or is derived from the Galaxea Dynamics A1Z Materials or the underlying technology; (iii) Providing services (e.g., cloud computing, hosting, consulting) based on the Galaxea Dynamics A1Z Materials for a fee; or (iv) Use by a for-profit entity for internal business operations, development, or manufacturing.
+
+1.10. "Intellectual Property Rights (IPR)" shall mean all worldwide intellectual property rights related to the Galaxea Dynamics A1Z Materials, including Copyrights, Patents (and patent applications), Trade Secrets, and Trademarks.
+
+1.11. “Derivatives” shall mean all: (i) modifications to Galaxea Dynamics A1Z or any Derivative of Galaxea Dynamics A1Z; (ii) works based on Galaxea Dynamics A1Z or any Derivative of Galaxea Dynamics A1Z; or (iii) any other mechanical arm product created by transferring the technical scheme and knowledge of Galaxea Dynamics A1Z or any derivative of Galaxea Dynamics A1Z, such as parameters, structure and data, which were not known to the public before Galaxea Dynamics disclosed Galaxea Dynamics A1Z Materials according to this Agreement, to the product, so that the performance of the product is similar to that of Galaxea Dynamics A1Z or its derivative.
+
+1.12. “Galaxea Dynamics A1Z Works” shall mean: (i) Galaxea Dynamics A1Z Materials; (ii) Derivatives; and (iii) all derivative works thereof.
+
+1.13. “Third Party” or “Third Parties” shall mean individuals or legal entities that are not under common control with Us or You.
+
+1.14. “Notice" shall mean copyright, acknowledgement and trademark notices, modification notices and all notices that refer to this Agreement, to the disclaimer of warranties and to Galaxea Dynamics as the creator of Galaxea Dynamics A1Z that are included in the Galaxea Dynamics A1Z Materials.
+
+2. GRANT OF LICENSE
+
+2.1. Scope of Grant: Subject to the terms and conditions of this Agreement, the Licensor hereby grants You a worldwide, non-exclusive, non-transferable, non-sublicensable, worldwide, royalty-free, and revocable limited license under the Licensor's IPR or other rights owned by Licensor embodied in or utilized by the Galaxea Dynamics A1Z Materials to study, use, copy, distribute, create derivative works of (including Derivatives), and make modifications (other than Notices) to the Galaxea Dynamics A1Z Materials, strictly for the Permitted Purpose only. You must not violate (or encourage or permit anyone else to violate) any term of this Agreement.
+
+2.2. Distribution: In addition to the conditions in Section 2.1, if You copy, distribute or make available to Third Parties the Galaxea Dynamics A1Z Works, You shall also meet all of the following conditions:
+
+a. You must provide all such Third Party recipients of the Galaxea Dynamics A1Z Works or products or services using them a copy of this Agreement, and indicate the Galaxea Dynamics A1Z Works is licensed under this Agreement, and include the text of, or the URI or hyperlink to, this Agreement;
+
+b. You must prominently display “Built with Galaxea Dynamics A1Z” on a related website, user interface, blogpost, about page, or product documentation;
+
+c. You must cause any modified files to carry prominent notices stating that You changed the files;
+
+d. All distributions to Third Parties must be accompanied by a “Notice” text file that contains the following notice: “Galaxea Dynamics A1Z is licensed under the Galaxea Dynamics A1Z License Agreement, not sold, Copyright 2026© Galaxea Dynamics. All Rights are reserved by Galaxea Dynamics. The trademark rights of “Galaxea Dynamics” are owned by Galaxea Dynamics or its affiliate.”;
+
+e. You may add Your own copyright statement and other licensing conditions to Your modifications but such licensing conditions should be compatible with this Agreement and shall not violate the terms and conditions of this Agreement, especially the grant conditions and restrictions in Section 2 and 3.
+
+2.3. No Commercial Rights: NO LICENSE IS GRANTED FOR ANY COMMERCIAL USE. Any Commercial Use of the Galaxea Dynamics A1Z Materials or their Derivative is strictly prohibited without a separate, written, commercial license agreement from Galaxea Dynamics, which Galaxea Dynamics may grant to You in its sole discretion. If You are granted a license for commercial use, You do not apply to this Agreement within the scope of the commercial license agreement.
+
+2.4. License Scope; Third-Party Open Source Components: The license granted under this Agreement applies solely and exclusively to the Galaxea Dynamics A1Z Materials made publicly available by Galaxea Dynamics under this Agreement, and does not extend to any other content, software, hardware, or materials. Where the Galaxea Dynamics A1Z Materials reference, incorporate, link to, or otherwise involve any open-source files, software or components that are owned by or licensed from any Third Party, such third-party open-source files, software or components are not licensed to You under this Agreement and shall remain subject to their respective original license terms. You shall comply with the terms and conditions of such respective licenses, and nothing in this Agreement shall be deemed to grant You any rights in or to any such third-party open-source files, software or components beyond the rights granted under their respective licenses.
+
+3. RULES OF USE.
+
+Your use of the Galaxea Dynamics A1Z Works must comply with applicable laws and regulations (including trade compliance laws and regulations) . You must include the use restrictions referenced in Sections 2 and 3 as an enforceable provision in any agreement (e.g., license agreement, terms of use, etc.) governing the use and/or distribution of Galaxea Dynamics A1Z Works and You must provide notice to subsequent users to whom You distribute that Galaxea Dynamics A1Z Works are subject to the use restrictions in these Sections 2 and 3.
+
+4. INTELLECTUAL PROPERTY.
+
+4.1. No trademark licenses are granted under this Agreement, and in connection with the Galaxea Dynamics A1Z Materials, Licensee may not use any name or mark owned by or associated with Galaxea Dynamics or any of its affiliates, except as required for reasonable and customary use in describing and redistributing the Galaxea Dynamics A1Z Materials or as set forth in this Section 4.1. Galaxea Dynamics hereby grants you a license to use “Galaxea Dynamics” (the “Mark”) solely as required to comply with Section 2.2. All goodwill arising out of your use of the Mark will inure to the benefit of Galaxea Dynamics.
+
+4.2. Subject to Galaxea Dynamics’s ownership of  Galaxea Dynamics A1Z Works made by or for Galaxea Dynamics and intellectual property rights therein, conditioned upon Your compliance with the terms and conditions of this Agreement, as between You and Galaxea Dynamics, You will be the owner of any derivative works and modifications of the Galaxea Dynamics A1Z Materials and any Derivatives that are made by or for You.
+
+4.3. If You commence a lawsuit or other proceedings (including a cross-claim or counterclaim in a lawsuit) against Us or any person or entity alleging that the Galaxea Dynamics A1Z Materials, or any portion of any of the foregoing, infringe any intellectual property or other right owned or licensable by You, then all licenses granted to You under this Agreement shall terminate as of the date such lawsuit or other proceeding is filed. You will defend, indemnify and hold harmless Us from and against any claim by any Third Party arising out of or related to Your or the Third Party’s use or distribution of the Galaxea Dynamics A1Z Works.
+
+5. DISCLAIMERS OF WARRANTY AND LIMITATIONS OF LIABILITY.
+
+5.1. We are not obligated to support, update, provide training for, or develop any further version of the Galaxea Dynamics A1Z Works or to grant any license thereto.
+
+5.2. UNLESS AND ONLY TO THE EXTENT REQUIRED BY APPLICABLE LAW, THE GALAXEA DYNAMICS A1Z MATERIALS ARE PROVIDED “AS IS” WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES OF ANY KIND INCLUDING ANY WARRANTIES OF TITLE, MERCHANTABILITY, NONINFRINGEMENT, COURSE OF DEALING, USAGE OF TRADE, OR FITNESS FOR A PARTICULAR PURPOSE. YOU ARE SOLELY RESPONSIBLE FOR DETERMINING THE APPROPRIATENESS OF USING, REPRODUCING, MODIFYING, PERFORMING, DISPLAYING OR DISTRIBUTING ANY OF THE GALAXEA DYNAMICS A1Z WORKS AND ASSUME ANY AND ALL RISKS ASSOCIATED WITH YOUR OR A THIRD PARTY’S USE OR DISTRIBUTION OF ANY OF THE GALAXEA DYNAMICS A1Z WORKS AND YOUR EXERCISE OF RIGHTS AND PERMISSIONS UNDER THIS AGREEMENT.
+
+5.3. TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL GALAXEA DYNAMICS OR ITS AFFILIATES BE LIABLE UNDER ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, TORT, NEGLIGENCE, PRODUCTS LIABILITY, OR OTHERWISE, FOR ANY DAMAGES, INCLUDING ANY DIRECT, INDIRECT, SPECIAL, INCIDENTAL, EXEMPLARY, CONSEQUENTIAL OR PUNITIVE DAMAGES, OR LOST PROFITS OF ANY KIND ARISING FROM THIS AGREEMENT OR RELATED TO ANY OF THE GALAXEA DYNAMICS A1Z WORKS, EVEN IF GALAXEA DYNAMICS OR ITS AFFILIATES HAVE BEEN ADVISED OF THE POSSIBILITY OF ANY OF THE FOREGOING.
+
+6. REVOCATION AND TERMINATION
+
+6.1. Revocation by Licensor: The Licensor reserves the right to revoke this non-commercial license at any time, with or without cause, upon written notice to the Recipient. Upon receiving a notice of revocation, the Recipient must immediately cease all use of the Galaxea Dynamics A1Z Works.
+
+6.2. Termination: The term of this Agreement shall commence upon Your acceptance of this Agreement or access to the Galaxea Dynamics A1Z Materials and will continue in full force and effect until terminated in accordance with the terms and conditions herein. We may terminate this Agreement if You breach any of the terms or conditions of this Agreement. Upon termination of this Agreement, You must promptly delete and cease use of the Galaxea Dynamics A1Z Works. Sections 4.2, 4.3, 5 and 7 shall survive the termination of this Agreement.
+
+7. GOVERNING LAW AND JURISDICTION.
+
+7.1. This Agreement and any dispute arising out of or relating to it will be governed by the laws of the Hong Kong Special Administrative Region of the People’s Republic of China, without regard to conflict of law principles, and the UN Convention on Contracts for the International Sale of Goods does not apply to this Agreement.
+
+7.2. Exclusive jurisdiction and venue for any dispute arising out of or relating to this Agreement will be a court of competent jurisdiction in the Hong Kong Special Administrative Region of the People’s Republic of China, and Galaxea Dynamics and Licensee consent to the exclusive jurisdiction of such court with respect to any such dispute.

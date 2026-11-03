@@ -1,0 +1,563 @@
+# This file is part of Pi05_A1Z, licensed under the Galaxea Dynamics A1Z License Agreement.
+# See LICENSE.txt in the project root; upstream components retain their applicable licenses.
+
+diff --git a/collectors/arm_collector.py b/collectors/arm_collector.py
+index 375c47e..830b749 100644
+--- a/collectors/arm_collector.py
++++ b/collectors/arm_collector.py
+@@ -50,9 +50,11 @@ class ArmCollector:
+         self._stop_event = threading.Event()
+         self._thread: Optional[threading.Thread] = None
+         self._error: Exception | None = None
++        self.steps = 0
+ 
+     def start(self) -> None:
+         self._error = None
++        self.steps = 0
+         self._stop_event.clear()
+         self._thread = threading.Thread(target=self._loop, daemon=True)
+         self._thread.start()
+@@ -72,6 +74,9 @@ class ArmCollector:
+         except Exception as exc:
+             self._error = exc
+             self._stop_event.set()
++            hold = getattr(self._follower, "hold", None)
++            if hold is not None:
++                hold(str(exc))
+ 
+     def _run_loop(self) -> None:
+         self._apply_os_settings()
+@@ -105,6 +110,7 @@ class ArmCollector:
+                     step["velocity_raw"] = vel
+                 self._dataset.append_arm(step)
+ 
++            self.steps += 1
+             _precise_sleep(self._period, t0)
+ 
+     def _apply_os_settings(self) -> None:
+diff --git a/collectors/camera_collector.py b/collectors/camera_collector.py
+index 306b387..460b54b 100644
+--- a/collectors/camera_collector.py
++++ b/collectors/camera_collector.py
+@@ -19,9 +19,13 @@ class CameraCollector:
+ 
+         self._stop_event = threading.Event()
+         self._threads: list = []
++        self._counts_lock = threading.Lock()
++        self._frame_counts = {name: 0 for name in camera_readers}
+ 
+     def start(self) -> None:
+         self._stop_event.clear()
++        with self._counts_lock:
++            self._frame_counts = {name: 0 for name in self._readers}
+         self._threads = [
+             threading.Thread(target=self._loop, args=(name,), daemon=True)
+             for name in self._readers
+@@ -33,6 +37,12 @@ class CameraCollector:
+         self._stop_event.set()
+         for t in self._threads:
+             t.join()
++        self._threads = []
++
++    def frame_counts(self) -> dict[str, int]:
++        """Return successful capture counts for terminal progress reporting."""
++        with self._counts_lock:
++            return self._frame_counts.copy()
+ 
+     def _loop(self, cam_name: str) -> None:
+         reader = self._readers[cam_name]
+@@ -41,6 +51,8 @@ class CameraCollector:
+             t0 = time.monotonic()
+             jpeg = reader.read_jpeg()
+             if jpeg is not None:
++                with self._counts_lock:
++                    self._frame_counts[cam_name] += 1
+                 ts = now()
+                 if self._dataset is not None:
+                     self._dataset.append_camera(cam_name, jpeg, ts)
+diff --git a/dataset/hdf5_dataset.py b/dataset/hdf5_dataset.py
+index 7beb53d..a5588c6 100644
+--- a/dataset/hdf5_dataset.py
++++ b/dataset/hdf5_dataset.py
+@@ -25,6 +25,7 @@ File layout (final):
+ 
+ import os
+ import time
++import fcntl
+ import multiprocessing as mp
+ import numpy as np
+ import h5py
+@@ -51,7 +52,7 @@ def _silent_remove(path: str) -> None:
+ def _merge_worker(final_path: str, task: str, arm_path: str, cam_paths: dict) -> None:
+     """Run in a subprocess so the merge never holds the GIL against the arm control thread."""
+     import h5py
+-    with h5py.File(final_path, "w") as dst:
++    with h5py.File(final_path, "x") as dst:
+         dst.attrs["task"] = task
+         with h5py.File(arm_path, "r") as src:
+             src.copy("arm", dst)
+@@ -284,21 +285,24 @@ class H5Dataset:
+         dataset_dir = os.path.abspath(cfg.hdf5_cfg.dataset_dir)
+         self._save_dir = os.path.join(dataset_dir, cfg.hdf5_cfg.task_name)
+         os.makedirs(self._save_dir, exist_ok=True)
+-
+-        start = cfg.hdf5_cfg.start_episode
+-        self._episode_idx = self._next_index(0 if start is None else start)
+-        print(f"[H5Dataset] starting at episode {self._episode_idx}")
+-
++        self._counter_path = os.path.join(self._save_dir, ".next_episode")
++        self._lock_path = os.path.join(self._save_dir, ".episode_index.lock")
++        self._episode_idx: int | None = None
+         self._writer: H5Writer = None
++        print(f"[H5Dataset] next episode >= {self._next_index()}")
+ 
+-    def open_episode(self, camera_names: list, use_velocity: bool = False) -> None:
++    def open_episode(self, camera_names: list, use_velocity: bool = False) -> int:
++        if self._writer is not None:
++            raise RuntimeError("An episode is already open")
++        self._episode_idx = self._reserve_index()
+         tmp_path = os.path.join(
+             self._save_dir, f"episode_{self._episode_idx}.hdf5.tmp"
+         )
+-        _silent_remove(tmp_path)
+-        _silent_remove(tmp_path + ".arm")
+-        for name in camera_names:
+-            _silent_remove(tmp_path + f".cam_{name}")
++        final_path = tmp_path[:-4]
++        if os.path.exists(final_path) or any(
++            name.startswith(os.path.basename(tmp_path)) for name in os.listdir(self._save_dir)
++        ):
++            raise FileExistsError(f"Refusing to overwrite episode: {final_path}")
+ 
+         self._writer = H5Writer(
+             path=tmp_path,
+@@ -307,6 +311,7 @@ class H5Dataset:
+             use_velocity=use_velocity,
+         )
+         self._writer.start()
++        return self._episode_idx
+ 
+     def append_arm(self, step: dict) -> None:
+         if self._writer is not None:
+@@ -320,19 +325,42 @@ class H5Dataset:
+         if self._writer is None:
+             return
+         t0 = time.time()
++        episode_idx = self._episode_idx
+         try:
+             final = self._writer.finish(discard=discard)
+         finally:
+             self._writer = None
++            self._episode_idx = None
+ 
+         if not discard:
+-            self._episode_idx += 1
+             print(f"[H5Dataset] saved {final} ({time.time() - t0:.2f}s flush)")
+         else:
+-            print(f"[H5Dataset] episode {self._episode_idx} discarded")
+-
+-    def _next_index(self, start: int) -> int:
+-        for i in range(start, start + 10000):
+-            if not os.path.exists(os.path.join(self._save_dir, f"episode_{i}.hdf5")):
+-                return i
+-        raise RuntimeError("Could not find a free episode index")
++            print(f"[H5Dataset] episode {episode_idx} discarded")
++
++    def _next_index(self) -> int:
++        start = self._cfg.hdf5_cfg.start_episode
++        next_index = 0 if start is None else int(start)
++        if next_index < 0:
++            raise ValueError("start_episode must be non-negative")
++        if os.path.exists(self._counter_path):
++            with open(self._counter_path, encoding="utf-8") as counter:
++                next_index = max(next_index, int(counter.read().strip()))
++        for name in os.listdir(self._save_dir):
++            if not name.startswith("episode_") or ".hdf5" not in name:
++                continue
++            number, _, suffix = name[len("episode_"):].partition(".hdf5")
++            if number.isdigit() and (not suffix or suffix.startswith(".tmp")):
++                next_index = max(next_index, int(number) + 1)
++        return next_index
++
++    def _reserve_index(self) -> int:
++        with open(self._lock_path, "a+") as lock:
++            fcntl.flock(lock, fcntl.LOCK_EX)
++            index = self._next_index()
++            tmp_counter = f"{self._counter_path}.{os.getpid()}.tmp"
++            with open(tmp_counter, "w", encoding="utf-8") as counter:
++                counter.write(f"{index + 1}\n")
++                counter.flush()
++                os.fsync(counter.fileno())
++            os.replace(tmp_counter, self._counter_path)
++            return index
+diff --git a/pyproject.toml b/pyproject.toml
+index 774b5c3..48f20aa 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -11,7 +11,6 @@ dependencies = [
+     "numpy>=1.24",
+     "h5py>=3.8",
+     "omegaconf>=2.3",
+-    "pynput>=1.7",
+     "opencv-python>=4.7",
+     "imageio>=2.31",
+     "imageio-ffmpeg>=0.4",
+diff --git a/robots/camera_opencv.py b/robots/camera_opencv.py
+index 4bcec50..601e108 100644
+--- a/robots/camera_opencv.py
++++ b/robots/camera_opencv.py
+@@ -26,6 +26,12 @@ class OpenCVCamera(CameraInterface):
+         self._cap.set(cv2.CAP_PROP_BUFFERSIZE, 4)
+         fourcc = int(self._cap.get(cv2.CAP_PROP_FOURCC))
+         self._is_mjpg = (fourcc == cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
++        actual_width = int(self._cap.get(cv2.CAP_PROP_FRAME_WIDTH))
++        actual_height = int(self._cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
++        actual_fps = self._cap.get(cv2.CAP_PROP_FPS)
++        actual_format = ''.join(chr((fourcc >> (8 * i)) & 0xFF) for i in range(4))
++        print(f"[Camera] {self._device}: {actual_width}x{actual_height} "
++              f"@ {actual_fps:g} Hz ({actual_format})", flush=True)
+         if self._is_mjpg:
+             self._cap.set(cv2.CAP_PROP_CONVERT_RGB, 0)
+         time.sleep(2.0)
+diff --git a/robots/dual_arm.py b/robots/dual_arm.py
+index 6d5cd9e..ba1ad2e 100644
+--- a/robots/dual_arm.py
++++ b/robots/dual_arm.py
+@@ -20,7 +20,11 @@ class DualArmLeader(LeaderArmInterface):
+ 
+     def open(self):
+         self._left.open()
+-        self._right.open()
++        try:
++            self._right.open()
++        except BaseException:
++            self._left.close()
++            raise
+ 
+     def read_as_vector(self):
+         action_l, vel_l = self._left.read_as_vector()
+@@ -66,8 +70,18 @@ class DualArmFollower(FollowerArmInterface):
+     def command(self, action: np.ndarray, velocity: np.ndarray | None = None):
+         vel_l = velocity[:6] if velocity is not None else None
+         vel_r = velocity[6:12] if velocity is not None else None
+-        self._left.command(action[:7], vel_l)
+-        self._right.command(action[7:], vel_r)
++        try:
++            self._left.command(action[:7], vel_l)
++            self._right.command(action[7:], vel_r)
++        except Exception:
++            self.hold("Dual-arm teleoperation command failed")
++            raise
++
++    def hold(self, reason):
++        try:
++            self._left.hold(reason)
++        finally:
++            self._right.hold(reason)
+ 
+     def get_joint_pos(self):
+         return np.concatenate([self._left.get_joint_pos(), self._right.get_joint_pos()])
+diff --git a/robots/follower_a1z.py b/robots/follower_a1z.py
+index 02e6de2..28a15c4 100644
+--- a/robots/follower_a1z.py
++++ b/robots/follower_a1z.py
+@@ -24,16 +24,22 @@ class A1ZFollowerArm(FollowerArmInterface):
+         self._robot.start(initial_kp=_SOFT_KP)
+ 
+     def command(self, action: np.ndarray, velocity: np.ndarray | None = None) -> None:
++        action = np.asarray(action, dtype=float)
++        if action.shape != (7,) or not np.isfinite(action).all():
++            raise ValueError("Follower command must be a finite 7D vector")
+         # The pinned A1Z SDK supplies its default PD gains when kp/kd are omitted.
+         cmd = {
+             "pos": action[:6],
+             "vel": velocity[:6] if velocity is not None else np.zeros(6),
+         }
+         if not self._robot.command_joint_state(cmd):
+-            raise RuntimeError("A1Z SDK rejected the follower joint command")
++            raise RuntimeError(f"SDK rejected command: {self._robot.get_fault_status()}")
+         if self._robot.gripper is not None and len(action) > 6:
+             self._robot.command_gripper(float(np.clip(action[6], 0.0, 1.0)))
+ 
++    def hold(self, reason: str) -> None:
++        self._robot.latch_last_command(reason=reason)
++
+     def get_joint_pos(self) -> np.ndarray:
+         return self._robot.get_joint_pos()
+ 
+@@ -41,6 +47,4 @@ class A1ZFollowerArm(FollowerArmInterface):
+         self._robot.stop()
+         if self._robot.is_running:
+             raise RuntimeError("A1Z SDK control thread is still running after stop")
+-        bus = getattr(self._robot, "_bus", None)
+-        if bus is not None:
+-            bus.shutdown()
++        # SDK stop owns disable retries, TX flush and bus lifecycle.
+diff --git a/robots/leader_a1z_t.py b/robots/leader_a1z_t.py
+index 0697079..b78cc77 100644
+--- a/robots/leader_a1z_t.py
++++ b/robots/leader_a1z_t.py
+@@ -1,21 +1,21 @@
+ import numpy as np
+-from a1z_t import DynamixelServoReader, DynamixelBus
++from a1z_t import A1ZTServoReader, A1ZTPrimaryServoBus
+ from teleop_app.config import load_config
+ from utils.interfaces import LeaderArmInterface
+ 
+ 
+ class A1ZTLeaderArm(LeaderArmInterface):
+-    """Wraps DynamixelServoReader to implement LeaderArmInterface."""
++    """Wraps A1ZTServoReader to implement LeaderArmInterface."""
+ 
+     def __init__(
+         self,
+         port: str,
+         side: str = "left",
+         config_path: str | None = None,
+-        shared_bus: "DynamixelBus | None" = None,
++        shared_bus: "A1ZTPrimaryServoBus | None" = None,
+     ):
+         cfg = load_config(config_path)
+-        self._reader = DynamixelServoReader(
++        self._reader = A1ZTServoReader(
+             port, side=side, config=cfg, shared_bus=shared_bus
+         )
+ 
+diff --git a/scripts/record_data.py b/scripts/record_data.py
+index e326134..14ea30f 100644
+--- a/scripts/record_data.py
++++ b/scripts/record_data.py
+@@ -17,7 +17,6 @@ from utils.interfaces import LeaderArmInterface, FollowerArmInterface, TeleopCon
+ from collectors.arm_collector import ArmCollector
+ from collectors.camera_collector import CameraCollector
+ from dataset.hdf5_dataset import H5Dataset
+-from utils.homing import return_to_home
+ from robots.leader_a1z_t import A1ZTLeaderArm
+ from robots.follower_a1z import A1ZFollowerArm
+ from robots.teleop_delta_controller import DeltaTeleopController, DualDeltaTeleopController
+@@ -104,10 +103,13 @@ def make_camera_readers(cfg: DataCollectionCfg, config_file: str | None = None)
+ 
+     readers = {}
+     for cam_name in cam_names:
++        resolution = cfg.camera_cfg.resolutions.get(cam_name)
++        width, height = (resolution if resolution else
++                         (cfg.camera_cfg.width, cfg.camera_cfg.height))
+         cam = OpenCVCamera(
+             device_map[cam_name],
+-            width=cfg.camera_cfg.width,
+-            height=cfg.camera_cfg.height,
++            width=width,
++            height=height,
+             fps=cfg.collector_cfg.camera_freq,
+         )
+         cam.open()
+@@ -116,19 +118,18 @@ def make_camera_readers(cfg: DataCollectionCfg, config_file: str | None = None)
+ 
+ 
+ def run(cfg: DataCollectionCfg, config_file: str | None = None) -> None:
++    if cfg.num_episodes is not None and cfg.num_episodes <= 0:
++        raise ValueError("num_episodes must be positive or null (unlimited)")
+     collector_cfg = cfg.collector_cfg
+     arm_cfg = cfg.arm_cfg
+-
+-    import os, termios, sys
+-    os.system("stty -echo")
+-
+-    leader, follower, controller = make_arm_readers(cfg)
++    leader = follower = None
+     listener = None
+     camera_readers = {}
+     arm_collector = None
+     camera_collector = None
+     dataset = None
+     try:
++        leader, follower, controller = make_arm_readers(cfg)
+         camera_readers = make_camera_readers(cfg, config_file)
+         dataset = H5Dataset(cfg)
+         arm_collector = ArmCollector(
+@@ -149,8 +150,8 @@ def run(cfg: DataCollectionCfg, config_file: str | None = None) -> None:
+         count = 0
+ 
+         try:
+-            while count < cfg.num_episodes:
+-                print(f"Press [S] to start episode {count + 1}/{cfg.num_episodes}")
++            while cfg.num_episodes is None or count < cfg.num_episodes:
++                print(f"Press [S] in this terminal to start episode {count + 1}/{cfg.num_episodes} (no Enter)")
+                 while not events["start_recording"]:
+                     if events["stop"]:
+                         break
+@@ -164,11 +165,23 @@ def run(cfg: DataCollectionCfg, config_file: str | None = None) -> None:
+                 print("Recording... [E] finish  [R] rerecord  [Q] quit")
+                 arm_collector.start()
+                 camera_collector.start()
++                episode_start = time.monotonic()
++                last_report = episode_start
+ 
+                 while not events["finish_recording"]:
+                     arm_collector.raise_if_failed()
+                     if events["stop"]:
+                         break
++                    current = time.monotonic()
++                    if current - last_report >= 5.0:
++                        elapsed = current - episode_start
++                        camera_counts = camera_collector.frame_counts()
++                        rates = " ".join(
++                            f"{name}={camera_counts[name] / elapsed:.1f}Hz"
++                            for name in cam_names
++                        )
++                        print(f"[REC {elapsed:.0f}s] arm={arm_collector.steps / elapsed:.1f}Hz {rates}")
++                        last_report = current
+                     time.sleep(0.02)
+ 
+                 arm_collector.stop()
+@@ -202,22 +215,28 @@ def run(cfg: DataCollectionCfg, config_file: str | None = None) -> None:
+             dataset.close_episode(discard=True)
+             raise
+ 
+-        print("Returning to home...")
+-        return_to_home(follower, 3.0)  # home after normal finish / Q / interrupt
+-        print("Home reached.")
++        print("Collection finished; stopping without an automatic home motion.")
+     except KeyboardInterrupt:
+-        print("\nAborted homing — emergency stop.")
++        print("\nCollection interrupted.")
+     finally:
+-        if listener is not None:
+-            listener.stop()
+-            listener.join(timeout=1.0)  # pynput blocks on read; stop() won't wake it, so don't wait forever
++        # Register all cleanup before executing any callback, so one failure
++        # cannot prevent the other arm, serial port, camera or writer closing.
+         with ExitStack() as cleanup:
+-            cleanup.callback(os.system, "stty sane")
+-            cleanup.callback(termios.tcflush, sys.stdin, termios.TCIOFLUSH)
+             for cam in camera_readers.values():
+                 cleanup.callback(cam.close)
+-            cleanup.callback(leader.close)
+-            cleanup.callback(follower.stop)
++            if leader is not None:
++                cleanup.callback(leader.close)
++            if follower is not None:
++                cleanup.callback(follower.stop)
++            if dataset is not None:
++                cleanup.callback(dataset.close_episode, discard=True)
++            if camera_collector is not None:
++                cleanup.callback(camera_collector.stop)
++            if arm_collector is not None:
++                cleanup.callback(arm_collector.stop)
++            if listener is not None:
++                cleanup.callback(listener.join, timeout=1.0)
++                cleanup.callback(listener.stop)
+ 
+ 
+ def main():
+diff --git a/utils/cfg.py b/utils/cfg.py
+index d25836f..d0856be 100644
+--- a/utils/cfg.py
++++ b/utils/cfg.py
+@@ -32,7 +32,8 @@ class CameraCfg:
+ 
+     width: int = 1280
+     height: int = 720
+-    """Capture resolution applied to every camera."""
++    resolutions: dict[str, List[int]] = field(default_factory=dict)
++    """Optional per-camera [width, height] overrides."""
+ 
+ 
+ @dataclass
+@@ -61,7 +62,7 @@ class Hdf5Cfg:
+ class DataCollectionCfg:
+     task_description: str = MISSING
+ 
+-    num_episodes: int = 1
++    num_episodes: Optional[int] = 1
+ 
+     hdf5_cfg: Hdf5Cfg = field(default_factory=Hdf5Cfg)
+     arm_cfg: ArmCfg = field(default_factory=ArmCfg)
+diff --git a/utils/key_handle.py b/utils/key_handle.py
+index 3b69cdc..d77d549 100644
+--- a/utils/key_handle.py
++++ b/utils/key_handle.py
+@@ -1,32 +1,62 @@
+-"""Keyboard event handler for recording control (S/E/R/Q)."""
++"""Read recording controls (S/E/R/Q) from the launching terminal."""
+ 
+-from pynput import keyboard
++import os
++import select
++import sys
++import termios
++import threading
++import tty
+ 
+ 
+-def init_keyboard_listener() -> tuple[keyboard.Listener, dict]:
++class TerminalKeyListener:
++    def __init__(self, events: dict, fd: int):
++        self._events = events
++        self._fd = fd
++        self._saved_terminal = termios.tcgetattr(fd)
++        self._stop_event = threading.Event()
++        self._thread = threading.Thread(target=self._run, daemon=True)
++
++    def start(self) -> None:
++        tty.setcbreak(self._fd)
++        try:
++            self._thread.start()
++        except Exception:
++            termios.tcsetattr(self._fd, termios.TCSADRAIN, self._saved_terminal)
++            raise
++
++    def _run(self) -> None:
++        while not self._stop_event.is_set():
++            readable, _, _ = select.select([self._fd], [], [], 0.1)
++            if not readable:
++                continue
++            key = os.read(self._fd, 1).lower()
++            if key == b"s":
++                self._events["start_recording"] = True
++            elif key == b"e":
++                self._events["finish_recording"] = True
++            elif key == b"r":
++                self._events["rerecord"] = True
++                self._events["finish_recording"] = True
++            elif key == b"q":
++                self._events["stop"] = True
++                self._events["finish_recording"] = True
++
++    def stop(self) -> None:
++        self._stop_event.set()
++
++    def join(self, timeout: float | None = None) -> None:
++        self._thread.join(timeout)
++        if not self._thread.is_alive():
++            termios.tcsetattr(self._fd, termios.TCSADRAIN, self._saved_terminal)
++
++
++def init_keyboard_listener(input_fd: int | None = None) -> tuple[TerminalKeyListener, dict]:
+     events = {
+         "start_recording": False,
+         "finish_recording": False,
+         "rerecord": False,
+         "stop": False,
+     }
+-
+-    def on_press(key):
+-        try:
+-            k = key.char.lower()
+-        except AttributeError:
+-            return
+-        if k == "s":
+-            events["start_recording"] = True
+-        elif k == "e":
+-            events["finish_recording"] = True
+-        elif k == "r":
+-            events["rerecord"] = True
+-            events["finish_recording"] = True
+-        elif k == "q":
+-            events["stop"] = True
+-            events["finish_recording"] = True
+-
+-    listener = keyboard.Listener(on_press=on_press)
++    listener = TerminalKeyListener(events, sys.stdin.fileno() if input_fd is None else input_fd)
+     listener.start()
+     return listener, events

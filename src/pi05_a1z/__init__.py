@@ -1,0 +1,4 @@
+# This file is part of Pi05_A1Z, licensed under the Galaxea Dynamics A1Z License Agreement.
+# See LICENSE.txt in the project root; upstream components retain their applicable licenses.
+
+"""A1Z integration for the pinned official pi0.5 implementation."""

@@ -1,0 +1,37 @@
+{
+  "$comment": "This file is part of Pi05_A1Z, licensed under the Galaxea Dynamics A1Z License Agreement. See LICENSE.txt in the project root; upstream components retain their applicable licenses.",
+  "topology": "pc-direct-single",
+  "server_host": "127.0.0.1",
+  "server_port": 8765,
+  "control_frequency": 15,
+  "camera_head": null,
+  "image_size": [
+    640,
+    480
+  ],
+  "task": "Describe the task here.",
+  "embodiment_type": "galaxea_a1z",
+  "request_timeout": 120,
+  "max_joint_step": 0.1,
+  "max_initial_joint_step": 0.1,
+  "gripper_boundary_tolerance": 0.02,
+  "max_cycles": 3,
+  "smoothing": {
+    "enabled": false,
+    "frequency": 250,
+    "max_velocity": 4.0,
+    "max_acceleration": 20.0,
+    "response_time": 0.04,
+    "stale_timeout": 1.0
+  },
+  "websocket_compression": null,
+  "can_channel": null,
+  "camera_wrist": null,
+  "hardware_checks": {
+    "can_adapter_serials": {
+      "single": ""
+    },
+    "camera_startup_timeout": 12.0,
+    "camera_frame_timeout": 1.0
+  }
+}

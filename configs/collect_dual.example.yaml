@@ -1,0 +1,38 @@
+# This file is part of Pi05_A1Z, licensed under the Galaxea Dynamics A1Z License Agreement.
+# See LICENSE.txt in the project root; upstream components retain their applicable licenses.
+
+task_description: Describe the task here
+num_episodes: 1
+hdf5_cfg:
+  dataset_dir: ../data/raw
+  task_name: your_task
+  start_episode: null
+arm_cfg:
+  collection_type: two_master_slave
+  leader_config_path: null
+  leader_port_left: null
+  leader_port_right: null
+  follower_can_left: null
+  follower_can_right: null
+  use_velocity: false
+  use_effort: false
+camera_cfg:
+  camera_names: [cam_high, cam_left_wrist, cam_right_wrist]
+  width: 640
+  height: 480
+  topics:
+    cam_high: null
+    cam_left_wrist: null
+    cam_right_wrist: null
+collector_cfg:
+  arm_freq: 30
+  camera_freq: 15
+  cpu_affinity: null
+  realtime_priority: false
+
+hardware_checks:
+  can_adapter_serials:
+    left: ""
+    right: ""
+  camera_startup_timeout: 12.0
+  camera_frame_timeout: 1.0
