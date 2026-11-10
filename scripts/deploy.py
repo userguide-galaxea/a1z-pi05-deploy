@@ -157,7 +157,7 @@ def main():
         cmd = [os.environ.get('A1Z_CLIENT_PYTHON', sys.executable),
                str(ROOT / 'scripts/check_devices.py'), '--config', str(path)]
     env = dict(os.environ)
-    env['PYTHONPATH'] = str(ROOT/'a1z-data-collect/a1z-t/GALAXEA-A1Z') + os.pathsep + env.get('PYTHONPATH', '')
+    env['PYTHONPATH'] = str(ROOT/'a1z-data-collect/a1z-t/galaxea_a1z') + os.pathsep + env.get('PYTHONPATH', '')
     # Replace the launcher so SIGINT cannot kill a child during SDK cleanup.
     os.execvpe(cmd[0], cmd, env)
 

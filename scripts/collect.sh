@@ -104,5 +104,5 @@ fi
 echo "Collection may move the follower arm(s). Confirm the workspace is clear and emergency stop is available." >&2
 "$PYTHON_BIN" "$A1Z_ROOT/scripts/check_devices.py" --config "$SOURCE_CONFIG"
 cd "$A1Z_ROOT/a1z-data-collect"
-export PYTHONPATH="$A1Z_ROOT/a1z-data-collect/a1z-t/GALAXEA-A1Z:$A1Z_ROOT/a1z-data-collect/a1z-t:$PWD${PYTHONPATH:+:$PYTHONPATH}"
+export PYTHONPATH="$A1Z_ROOT/a1z-data-collect/a1z-t/galaxea_a1z:$A1Z_ROOT/a1z-data-collect/a1z-t:$PWD${PYTHONPATH:+:$PYTHONPATH}"
 "$PYTHON_BIN" -m "$MODULE" "config_file=$CONFIG" "$@"

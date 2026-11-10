@@ -9,7 +9,7 @@ The links below refer to revisions recorded in `versions.json`. By default, A1Z-
 | openpi source | [Apache License 2.0](https://github.com/Physical-Intelligence/openpi/blob/215abfb217dbac7d5f1273282331b9b1866c0479/LICENSE) |
 | a1z-data-collect | [MIT License](https://github.com/userguide-galaxea/a1z-data-collect/blob/33f44c93ed949c481b1fee81dbd3de3773128624/LICENSE) |
 | a1z-t | [A1Z-T License Agreement](https://github.com/userguide-galaxea/a1z-t/blob/93235404adbb5b753da6fd4d62eccc60805cfeaa/LICENSE), [NOTICE](https://github.com/userguide-galaxea/a1z-t/blob/93235404adbb5b753da6fd4d62eccc60805cfeaa/NOTICE), and [bundled third-party licenses](https://github.com/userguide-galaxea/a1z-t/tree/93235404adbb5b753da6fd4d62eccc60805cfeaa/a1z_t/licenses) |
-| GALAXEA-A1Z SDK | [MIT License](https://github.com/userguide-galaxea/GALAXEA-A1Z/blob/156af498a947a830ca38efff4dd08fd2da96a200/LICENSE) |
+| galaxea_a1z SDK | [MIT License](https://github.com/userguide-galaxea/galaxea_a1z/blob/156af498a947a830ca38efff4dd08fd2da96a200/LICENSE) |
 
 Model weights are obtained separately from upstream and are subject to the terms that accompany them.
 

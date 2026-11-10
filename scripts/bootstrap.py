@@ -11,7 +11,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 LEADER = "a1z-data-collect/a1z-t"
-SDK_NAME = "GALAXEA-A1Z"
+SDK_NAME = "galaxea_a1z"
 SDK = f"{LEADER}/{SDK_NAME}"
 LEADER_MAIN = "refs/remotes/origin/main"
 
