@@ -1,8 +1,10 @@
 # Third-party notices
 
-The components below are pinned in `versions.json` and retain their original terms. The [A1Z agreement](LICENSE.txt) covers the original A1Z integration materials provided under that agreement.
+The components below retain their original terms. The [A1Z agreement](LICENSE.txt) covers the original A1Z integration materials provided under that agreement.
 
-| Component | Original license or notice at the pinned revision |
+The links below refer to revisions recorded in `versions.json`. By default, A1Z-T follows upstream `main` and its SDK follows the selected A1Z-T commit. For those revisions, use the license and notice files in the checked-out components.
+
+| Component | Original license or notice at the recorded revision |
 | --- | --- |
 | openpi source | [Apache License 2.0](https://github.com/Physical-Intelligence/openpi/blob/215abfb217dbac7d5f1273282331b9b1866c0479/LICENSE) |
 | a1z-data-collect | [MIT License](https://github.com/userguide-galaxea/a1z-data-collect/blob/33f44c93ed949c481b1fee81dbd3de3773128624/LICENSE) |

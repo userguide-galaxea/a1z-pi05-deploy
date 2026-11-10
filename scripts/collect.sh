@@ -2,7 +2,7 @@
 # This file is part of Pi05_A1Z, licensed under the Galaxea Dynamics A1Z License Agreement.
 # See LICENSE.txt in the project root; upstream components retain their applicable licenses.
 
-# HDF5 collection with the pinned a1z-data-collect/a1z-t leader.
+# HDF5 collection with a1z-data-collect and its nested a1z-t leader.
 set -euo pipefail
 
 A1Z_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

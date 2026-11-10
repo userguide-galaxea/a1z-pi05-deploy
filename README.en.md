@@ -40,7 +40,16 @@ python3 scripts/bootstrap.py
 python3 scripts/verify_workspace.py
 ```
 
-Bootstrap initializes pinned `openpi`, `a1z-data-collect` and its nested `a1z-t/GALAXEA-A1Z`, then applies the collection integration patch. It does not download model weights. Do not independently update submodules to other revisions.
+Bootstrap pins `openpi` and `a1z-data-collect` and applies the collection integration patch. It fetches the nested A1Z-T from upstream `main` by default and checks out the SDK revision recorded by that A1Z-T commit. Bootstrap does not download model weights.
+
+If fetching A1Z-T `main` fails or you encounter a compatibility issue, use the fallback that passed π0.5 source integration checks: A1Z-T `93235404adbb` and SDK `156af498a947` (full commits in [versions.json](versions.json)).
+
+```bash
+python3 scripts/bootstrap.py --tested-a1z-t
+python3 scripts/verify_workspace.py
+```
+
+Run bootstrap without flags to switch back to `main`.
 
 ## 2. Install environments
 
@@ -62,6 +71,8 @@ conda activate pi05-robot
 export A1Z_PYTHON="$CONDA_PREFIX/bin/python"
 bash scripts/setup_robot.sh
 ```
+
+To install the fallback, run `bash scripts/setup_robot.sh --tested-a1z-t` instead. Model setup initializes only openpi and leaves the selected A1Z-T revision in place.
 
 uv manages the model environment for statistics, training and policy serving:
 
@@ -108,6 +119,8 @@ python scripts/preview_cameras.py --config "$A1Z_COLLECT_CONFIG" --check-only --
 ```
 
 Fill in real task text, the output directory (prefer an absolute path), `task_name`, `num_episodes`, Leader serial ports, Follower CAN channels and camera paths. Set `leader_config_path` to the absolute path of your local a1z-t YAML, and select EVT / PVT for your hardware. Single mode uses `head` and `wrist`; dual mode keeps the template's three camera fields. Preview labels are Head / Wrist or Head / Left Wrist / Right Wrist. Dual collection requires two independent Leader serial ports.
+
+The checked A1Z-T `main` revision (`2cec5ad`) defaults to PVT, while the fallback defaults to EVT. After switching revisions, copy `a1z-data-collect/a1z-t/config.yaml` outside the submodule, set `a1z_t_version` for your Leader, and confirm the loaded profile with `--check` below.
 
 `can0` / `can1` are interface names, not physical arm roles. With motors disabled, trace the cables and fill `hardware_checks.can_adapter_serials` from discovered adapters: `single` for single mode, or `left` / `right` for dual mode. Keep physical roles consistent between collection and inference. Empty or mismatched serials refuse startup. For hardware without a serial, explicitly use `null`, assign stable interface names and verify cabling manually. Software does not infer physical sides or swap channels automatically.
 

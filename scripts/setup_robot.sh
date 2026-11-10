@@ -4,7 +4,7 @@
 
 set -euo pipefail
 A1Z_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-python3 "$A1Z_ROOT/scripts/bootstrap.py"
+python3 "$A1Z_ROOT/scripts/bootstrap.py" "$@"
 python -m pip install -r "$A1Z_ROOT/requirements-robot.txt"
 python -m pip install -e "$A1Z_ROOT/a1z-data-collect/a1z-t/GALAXEA-A1Z" -e "$A1Z_ROOT/a1z-data-collect"
 # Install the nested Leader without replacing workspace dependencies.
