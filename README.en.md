@@ -40,16 +40,34 @@ python3 scripts/bootstrap.py
 python3 scripts/verify_workspace.py
 ```
 
-Bootstrap pins `openpi` and `a1z-data-collect` and applies the collection integration patch. It fetches the nested A1Z-T from upstream `main` by default and checks out the SDK revision recorded by that A1Z-T commit. Bootstrap does not download model weights.
+Bootstrap pins `openpi` and applies the collection integration patch. `a1z-data-collect` and its nested A1Z-T are no longer submodules: the script clones them when the directories are missing and updates them to upstream `main` when present, so child updates need no change in this repository. The `galaxea_a1z` SDK is cloned the same way and also follows `main`. Bootstrap does not download model weights.
 
-If fetching A1Z-T `main` fails or you encounter a compatibility issue, use the fallback that passed π0.5 source integration checks: A1Z-T `93235404adbb` and SDK `156af498a947` (full commits in [versions.json](versions.json)).
+To prepare them manually instead (all three paths are listed in `.gitignore`):
 
 ```bash
-python3 scripts/bootstrap.py --tested-a1z-t
+git clone --branch main https://github.com/userguide-galaxea/a1z-data-collect.git a1z-data-collect
+git clone --branch main https://github.com/userguide-galaxea/a1z-t.git a1z-data-collect/a1z-t
+git clone --branch main https://github.com/userguide-galaxea/galaxea_a1z.git a1z-data-collect/a1z-t/galaxea_a1z
+```
+
+For routine updates just re-run `python3 scripts/bootstrap.py`; it moves all three dependencies to the latest `main`, reverses the old patch, and reapplies the integration patch.
+
+**The currently tested versions** are recorded in [versions.json](versions.json): `a1z-data-collect` `3ff87bf3f341240ea719781a69c3b0f1b2dcd4f9`, A1Z-T `61f19bb0af7194b77a22991b795e389550815bf8`, SDK `156af498a947a830ca38efff4dd08fd2da96a200`. If a newer `main` causes a patch conflict or compatibility issue, roll back to the combination that passed π0.5 source integration checks:
+
+```bash
+python3 scripts/bootstrap.py --tested
 python3 scripts/verify_workspace.py
 ```
 
-Run bootstrap without flags to switch back to `main`.
+Use `--tested-a1z-t` to revert only A1Z-T while `a1z-data-collect` keeps following `main`. Run bootstrap without flags to switch back to `main`.
+
+**To lock a single component to a historical commit**, run `python3 scripts/bootstrap.py` first, then switch that component manually:
+
+```bash
+git -C a1z-data-collect checkout <commit>        # or a1z-data-collect/a1z-t
+```
+
+Do not run `bootstrap.py` again afterwards, because it re-checkouts according to the selected mode; reinstall the affected component with `pip install -e` and confirm with `verify_workspace.py`.
 
 ## 2. Install environments
 
@@ -72,7 +90,7 @@ export A1Z_PYTHON="$CONDA_PREFIX/bin/python"
 bash scripts/setup_robot.sh
 ```
 
-To install the fallback, run `bash scripts/setup_robot.sh --tested-a1z-t` instead. Model setup initializes only openpi and leaves the selected A1Z-T revision in place.
+To install the fallback, run `bash scripts/setup_robot.sh --tested` instead (use `--tested-a1z-t` to revert only A1Z-T). Model setup initializes only openpi and leaves the selected A1Z-T revision in place.
 
 uv manages the model environment for statistics, training and policy serving:
 
@@ -120,7 +138,7 @@ python scripts/preview_cameras.py --config "$A1Z_COLLECT_CONFIG" --check-only --
 
 Fill in real task text, the output directory (prefer an absolute path), `task_name`, `num_episodes`, Leader serial ports, Follower CAN channels and camera paths. Set `leader_config_path` to the absolute path of your local a1z-t YAML, and select EVT / PVT for your hardware. Single mode uses `head` and `wrist`; dual mode keeps the template's three camera fields. Preview labels are Head / Wrist or Head / Left Wrist / Right Wrist. Dual collection requires two independent Leader serial ports.
 
-The checked A1Z-T `main` revision (`2cec5ad`) defaults to PVT, while the fallback defaults to EVT. After switching revisions, copy `a1z-data-collect/a1z-t/config.yaml` outside the submodule, set `a1z_t_version` for your Leader, and confirm the loaded profile with `--check` below.
+The checked A1Z-T `main` revision (`61f19bb`) defaults to PVT, while the fallback defaults to EVT. After switching revisions, copy `a1z-data-collect/a1z-t/config.yaml` outside that directory, set `a1z_t_version` for your Leader, and confirm the loaded profile with `--check` below.
 
 `can0` / `can1` are interface names, not physical arm roles. With motors disabled, trace the cables and fill `hardware_checks.can_adapter_serials` from discovered adapters: `single` for single mode, or `left` / `right` for dual mode. Keep physical roles consistent between collection and inference. Empty or mismatched serials refuse startup. For hardware without a serial, explicitly use `null`, assign stable interface names and verify cabling manually. Software does not infer physical sides or swap channels automatically.
 

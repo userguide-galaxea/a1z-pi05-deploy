@@ -7,7 +7,7 @@ import json
 import subprocess
 import sys
 
-from bootstrap import LEADER, LEADER_MAIN, ROOT, SDK, git, head, sdk_gitlink
+from bootstrap import COLLECTOR, LEADER, LEADER_MAIN, MAIN_REF, ROOT, SDK, git, head
 
 
 def main():
@@ -16,7 +16,7 @@ def main():
     for name in ("openpi", "a1z-data-collect", LEADER, SDK):
         target = ROOT / name
         if not (target / ".git").exists():
-            errors.append(f"Uninitialized submodule: {name}")
+            errors.append(f"Source not initialized: {name}; run python3 scripts/bootstrap.py")
             continue
         actual = head(target)
         expected = versions[name]
@@ -28,14 +28,21 @@ def main():
             if fetched.returncode or actual != fetched.stdout.strip():
                 errors.append(f"Version mismatch: {name} is neither fetched main nor the tested fallback")
                 continue
-        elif name == SDK:
-            leader = ROOT / LEADER
-            expected = sdk_gitlink(leader, "HEAD") if (leader / ".git").exists() else None
-            if actual != expected:
-                errors.append(f"Version mismatch: {name} must match the selected A1Z-T gitlink")
+        elif name == COLLECTOR:
+            if actual == expected:
+                print(f"OK {name} {actual} (tested fallback)")
                 continue
-            if head(leader) == versions[LEADER] and actual != versions[SDK]:
-                errors.append("The fallback A1Z-T and SDK commits in versions.json do not match")
+            fetched = git(target, "rev-parse", "--verify", MAIN_REF, check=False)
+            if fetched.returncode or actual != fetched.stdout.strip():
+                errors.append(f"Version mismatch: {name} is neither fetched main nor the tested fallback")
+                continue
+        elif name == SDK:
+            if actual == expected:
+                print(f"OK {name} {actual} (tested fallback)")
+                continue
+            fetched = git(target, "rev-parse", "--verify", MAIN_REF, check=False)
+            if fetched.returncode or actual != fetched.stdout.strip():
+                errors.append(f"Version mismatch: {name} is neither fetched main nor the tested fallback")
                 continue
         elif actual != expected:
             errors.append(f"Version mismatch: {name}")

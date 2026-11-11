@@ -21,3 +21,6 @@ dist/
 *.incomplete/
 /configs/**/*.local.*
 /configs/collect*.local.yaml
+
+# Cloned first-party dependencies, not submodules (see README).
+/a1z-data-collect/
