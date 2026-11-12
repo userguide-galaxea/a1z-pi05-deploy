@@ -2,7 +2,7 @@
 # This file is part of Pi05_A1Z, licensed under the Galaxea Dynamics A1Z License Agreement.
 # See LICENSE.txt in the project root; upstream components retain their applicable licenses.
 
-# HDF5 collection with a1z-data-collect and its nested a1z-t leader.
+# HDF5 collection with a1z_data_collection and its nested a1z-t leader.
 set -euo pipefail
 
 A1Z_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -103,6 +103,6 @@ fi
 [[ -t 0 ]] || { echo "Interactive terminal required before enabling the follower arm(s)" >&2; exit 2; }
 echo "Collection may move the follower arm(s). Confirm the workspace is clear and emergency stop is available." >&2
 "$PYTHON_BIN" "$A1Z_ROOT/scripts/check_devices.py" --config "$SOURCE_CONFIG"
-cd "$A1Z_ROOT/a1z-data-collect"
-export PYTHONPATH="$A1Z_ROOT/a1z-data-collect/a1z-t/galaxea_a1z:$A1Z_ROOT/a1z-data-collect/a1z-t:$PWD${PYTHONPATH:+:$PYTHONPATH}"
+cd "$A1Z_ROOT/a1z_data_collection"
+export PYTHONPATH="$A1Z_ROOT/a1z_data_collection/a1z-t/galaxea_a1z:$A1Z_ROOT/a1z_data_collection/a1z-t:$PWD${PYTHONPATH:+:$PYTHONPATH}"
 "$PYTHON_BIN" -m "$MODULE" "config_file=$CONFIG" "$@"

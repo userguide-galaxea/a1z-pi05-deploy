@@ -6,16 +6,16 @@ set -euo pipefail
 A1Z_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 python3 "$A1Z_ROOT/scripts/bootstrap.py" "$@"
 python -m pip install -r "$A1Z_ROOT/requirements-robot.txt"
-python -m pip install -e "$A1Z_ROOT/a1z-data-collect/a1z-t/galaxea_a1z" -e "$A1Z_ROOT/a1z-data-collect"
+python -m pip install -e "$A1Z_ROOT/a1z_data_collection/a1z-t/galaxea_a1z" -e "$A1Z_ROOT/a1z_data_collection"
 # Install the nested Leader without replacing workspace dependencies.
-python -m pip install --no-deps -e "$A1Z_ROOT/a1z-data-collect/a1z-t"
+python -m pip install --no-deps -e "$A1Z_ROOT/a1z_data_collection/a1z-t"
 python - "$A1Z_ROOT" <<'PY'
 from pathlib import Path
 import sys
 import a1z, a1z_t
 from teleop_app.config import load_config
 root = Path(sys.argv[1]).resolve()
-sdk = root / "a1z-data-collect/a1z-t/galaxea_a1z"
+sdk = root / "a1z_data_collection/a1z-t/galaxea_a1z"
 if not Path(a1z.__file__).resolve().is_relative_to(sdk):
     raise SystemExit(f"Unexpected SDK import: {a1z.__file__}; reinstall the workspace SDK")
 print("SDK:", a1z.__file__)

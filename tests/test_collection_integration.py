@@ -11,7 +11,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 ROOT = Path(__file__).resolve().parents[1]
-COLLECT = ROOT / "a1z-data-collect"
+COLLECT = ROOT / "a1z_data_collection"
 sys.path.insert(0, str(COLLECT))
 from collectors.arm_collector import ArmCollector
 spec = importlib.util.spec_from_file_location("a1z_record_data", COLLECT / "scripts/record_data.py")

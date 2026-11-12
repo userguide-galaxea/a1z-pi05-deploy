@@ -34,37 +34,39 @@ sudo apt-get update
 sudo apt-get install -y git curl build-essential python3-venv ffmpeg tmux can-utils iproute2 nano
 uname -r
 nvidia-smi
-git clone --branch main https://github.com/userguide-galaxea/a1z-pi05-deploy.git Pi05_A1Z
+git clone --branch main https://github.com/userguide-galaxea/a1z_pi05_deployment.git Pi05_A1Z
 cd Pi05_A1Z
 python3 scripts/bootstrap.py
 python3 scripts/verify_workspace.py
 ```
 
-Bootstrap pins `openpi` and applies the collection integration patch. `a1z-data-collect` and its nested A1Z-T are no longer submodules: the script clones them when the directories are missing and updates them to upstream `main` when present, so child updates need no change in this repository. The `galaxea_a1z` SDK is cloned the same way and also follows `main`. Bootstrap does not download model weights.
+Bootstrap pins `openpi` and applies the collection integration patch. `a1z_data_collection` and its nested A1Z-T are no longer submodules: the script clones them when the directories are missing and updates them to upstream `main` when present, so child updates need no change in this repository. The `galaxea_a1z` SDK is cloned the same way and also follows `main`. Bootstrap does not download model weights.
 
 To prepare them manually instead (all three paths are listed in `.gitignore`):
 
+When upgrading an existing workspace, preserve local changes and rename `a1z-data-collect` to `a1z_data_collection` first. If both directories exist, inspect and resolve them manually.
+
 ```bash
-git clone --branch main https://github.com/userguide-galaxea/a1z-data-collect.git a1z-data-collect
-git clone --branch main https://github.com/userguide-galaxea/a1z-t.git a1z-data-collect/a1z-t
-git clone --branch main https://github.com/userguide-galaxea/galaxea_a1z.git a1z-data-collect/a1z-t/galaxea_a1z
+git clone --branch main https://github.com/userguide-galaxea/a1z_data_collection.git a1z_data_collection
+git clone --branch main https://github.com/userguide-galaxea/a1z-t.git a1z_data_collection/a1z-t
+git clone --branch main https://github.com/userguide-galaxea/galaxea_a1z.git a1z_data_collection/a1z-t/galaxea_a1z
 ```
 
 For routine updates just re-run `python3 scripts/bootstrap.py`; it moves all three dependencies to the latest `main`, reverses the old patch, and reapplies the integration patch.
 
-**The currently tested versions** are recorded in [versions.json](versions.json): `a1z-data-collect` `3ff87bf3f341240ea719781a69c3b0f1b2dcd4f9`, A1Z-T `61f19bb0af7194b77a22991b795e389550815bf8`, SDK `156af498a947a830ca38efff4dd08fd2da96a200`. If a newer `main` causes a patch conflict or compatibility issue, roll back to the combination that passed π0.5 source integration checks:
+**The currently tested versions** are recorded in [versions.json](versions.json): `a1z_data_collection` `3ff87bf3f341240ea719781a69c3b0f1b2dcd4f9`, A1Z-T `61f19bb0af7194b77a22991b795e389550815bf8`, SDK `156af498a947a830ca38efff4dd08fd2da96a200`. If a newer `main` causes a patch conflict or compatibility issue, roll back to the combination that passed π0.5 source integration checks:
 
 ```bash
 python3 scripts/bootstrap.py --tested
 python3 scripts/verify_workspace.py
 ```
 
-Use `--tested-a1z-t` to revert only A1Z-T while `a1z-data-collect` keeps following `main`. Run bootstrap without flags to switch back to `main`.
+Use `--tested-a1z-t` to revert only A1Z-T while `a1z_data_collection` keeps following `main`. Run bootstrap without flags to switch back to `main`.
 
 **To lock a single component to a historical commit**, run `python3 scripts/bootstrap.py` first, then switch that component manually:
 
 ```bash
-git -C a1z-data-collect checkout <commit>        # or a1z-data-collect/a1z-t
+git -C a1z_data_collection checkout <commit>        # or a1z_data_collection/a1z-t
 ```
 
 Do not run `bootstrap.py` again afterwards, because it re-checkouts according to the selected mode; reinstall the affected component with `pip install -e` and confirm with `verify_workspace.py`.
@@ -123,7 +125,7 @@ conda activate pi05-robot
 export A1Z_PYTHON="$CONDA_PREFIX/bin/python"
 export ARM_MODE=single   # Change to dual for two arms
 mkdir -p "$HOME/a1z-local"
-cp -n a1z-data-collect/a1z-t/teleop_app/config.yaml "$HOME/a1z-local/a1z-t.yaml"
+cp -n a1z_data_collection/a1z-t/teleop_app/config.yaml "$HOME/a1z-local/a1z-t.yaml"
 cp -n "configs/collect_${ARM_MODE}.example.yaml" "$HOME/a1z-local/collect_${ARM_MODE}.yaml"
 python scripts/check_devices.py --list-can
 nano "$HOME/a1z-local/a1z-t.yaml"
@@ -138,7 +140,7 @@ python scripts/preview_cameras.py --config "$A1Z_COLLECT_CONFIG" --check-only --
 
 Fill in real task text, the output directory (prefer an absolute path), `task_name`, `num_episodes`, Leader serial ports, Follower CAN channels and camera paths. Set `leader_config_path` to the absolute path of your local a1z-t YAML, and select EVT / PVT for your hardware. Single mode uses `head` and `wrist`; dual mode keeps the template's three camera fields. Preview labels are Head / Wrist or Head / Left Wrist / Right Wrist. Dual collection requires two independent Leader serial ports.
 
-The checked A1Z-T `main` revision (`61f19bb`) defaults to PVT, while the fallback defaults to EVT. After switching revisions, copy `a1z-data-collect/a1z-t/config.yaml` outside that directory, set `a1z_t_version` for your Leader, and confirm the loaded profile with `--check` below.
+The checked A1Z-T `main` revision (`61f19bb`) defaults to PVT, while the fallback defaults to EVT. After switching revisions, copy `a1z_data_collection/a1z-t/config.yaml` outside that directory, set `a1z_t_version` for your Leader, and confirm the loaded profile with `--check` below.
 
 `can0` / `can1` are interface names, not physical arm roles. With motors disabled, trace the cables and fill `hardware_checks.can_adapter_serials` from discovered adapters: `single` for single mode, or `left` / `right` for dual mode. Keep physical roles consistent between collection and inference. Empty or mismatched serials refuse startup. For hardware without a serial, explicitly use `null`, assign stable interface names and verify cabling manually. Software does not infer physical sides or swap channels automatically.
 
@@ -169,7 +171,7 @@ S starts, E saves, R discards and rerecords, and Q exits. Exit does not automati
 
 ```bash
 read -r -p 'Full path to a saved episode_N.hdf5: ' A1Z_EPISODE
-python a1z-data-collect/tools/inspect_episode.py "$A1Z_EPISODE"
+python a1z_data_collection/tools/inspect_episode.py "$A1Z_EPISODE"
 ```
 
 The inspector reads data and exports an MP4 for each camera; it does not control the robot. Confirm two streams for single or three for dual, correct view assignment, complete synchronized actions, real task text, 7D / 14D states and actions, joints in radians and grippers in `[0,1]`. Inspect early, middle and late episodes; keep failed recordings out of training.

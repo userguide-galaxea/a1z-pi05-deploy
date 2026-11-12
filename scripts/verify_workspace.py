@@ -13,7 +13,7 @@ from bootstrap import COLLECTOR, LEADER, LEADER_MAIN, MAIN_REF, ROOT, SDK, git, 
 def main():
     errors = []
     versions = json.loads((ROOT / "versions.json").read_text())
-    for name in ("openpi", "a1z-data-collect", LEADER, SDK):
+    for name in ("openpi", "a1z_data_collection", LEADER, SDK):
         target = ROOT / name
         if not (target / ".git").exists():
             errors.append(f"Source not initialized: {name}; run python3 scripts/bootstrap.py")
@@ -49,7 +49,7 @@ def main():
             continue
         print(f"OK {name} {actual}")
     patch = ROOT / "patches/a1z-data-collect-integration.patch"
-    result = git(ROOT / "a1z-data-collect", "apply", "--reverse", "--check", str(patch), check=False)
+    result = git(ROOT / "a1z_data_collection", "apply", "--reverse", "--check", str(patch), check=False)
     if result.returncode:
         errors.append("Missing or modified collection integration patch")
     if (ROOT / "GalaxeaVLA").exists():

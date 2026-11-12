@@ -1,7 +1,7 @@
 # This file is part of Pi05_A1Z, licensed under the Galaxea Dynamics A1Z License Agreement.
 # See LICENSE.txt in the project root; upstream components retain their applicable licenses.
 
-"""Convert pinned a1z-data-collect dual-arm HDF5 episodes to LeRobot v2.1."""
+"""Convert pinned a1z_data_collection dual-arm HDF5 episodes to LeRobot v2.1."""
 import argparse
 from functools import partial
 import hashlib

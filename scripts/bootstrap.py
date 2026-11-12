@@ -10,14 +10,14 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-COLLECTOR = "a1z-data-collect"
+COLLECTOR = "a1z_data_collection"
 LEADER = f"{COLLECTOR}/a1z-t"
 SDK_NAME = "galaxea_a1z"
 SDK = f"{LEADER}/{SDK_NAME}"
 MAIN_REF = "refs/remotes/origin/main"
 LEADER_MAIN = MAIN_REF
 COLLECTOR_PATCH = "patches/a1z-data-collect-integration.patch"
-COLLECTOR_URL = "https://github.com/userguide-galaxea/a1z-data-collect.git"
+COLLECTOR_URL = "https://github.com/userguide-galaxea/a1z_data_collection.git"
 LEADER_URL = "https://github.com/userguide-galaxea/a1z-t.git"
 SDK_URL = "https://github.com/userguide-galaxea/galaxea_a1z.git"
 
@@ -67,7 +67,9 @@ def collector_patch_applied():
 
 
 def init_collector(versions, tested):
-    """Follow a1z-data-collect main, or fall back to the tested commit."""
+    """Follow a1z_data_collection main, or fall back to the tested commit."""
+    if (ROOT / "a1z-data-collect").exists():
+        raise RuntimeError("Legacy a1z-data-collect directory found; preserve your work and rename it to a1z_data_collection before continuing")
     ensure_clone(COLLECTOR, COLLECTOR_URL)
     folder = ROOT / COLLECTOR
     if tested:
@@ -149,7 +151,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     modes = parser.add_mutually_exclusive_group()
     modes.add_argument("--tested", action="store_true",
-                       help="Use the tested commits from versions.json for a1z-data-collect and A1Z-T")
+                       help="Use the tested commits from versions.json for a1z_data_collection and A1Z-T")
     modes.add_argument("--tested-a1z-t", action="store_true", help="Use only the tested A1Z-T fallback")
     modes.add_argument("--openpi-only", action="store_true", help="Initialize only openpi for model setup")
     args = parser.parse_args()
@@ -162,7 +164,7 @@ def main():
     init_leader(versions, args.tested or args.tested_a1z_t)
     init_sdk(versions, args.tested or args.tested_a1z_t)
     patch = str(ROOT / "patches/a1z-data-collect-integration.patch")
-    collector = ROOT / "a1z-data-collect"
+    collector = ROOT / "a1z_data_collection"
     if git(collector, "apply", "--reverse", "--check", patch, check=False).returncode == 0:
         print("Collection patch already applied")
     else:

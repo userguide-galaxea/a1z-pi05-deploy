@@ -34,37 +34,39 @@ sudo apt-get update
 sudo apt-get install -y git curl build-essential python3-venv ffmpeg tmux can-utils iproute2 nano
 uname -r
 nvidia-smi
-git clone --branch main https://github.com/userguide-galaxea/a1z-pi05-deploy.git Pi05_A1Z
+git clone --branch main https://github.com/userguide-galaxea/a1z_pi05_deployment.git Pi05_A1Z
 cd Pi05_A1Z
 python3 scripts/bootstrap.py
 python3 scripts/verify_workspace.py
 ```
 
-bootstrap 固定 `openpi` 并应用采集集成补丁。`a1z-data-collect` 与内嵌 A1Z-T 不再是 submodule：目录不存在时脚本自动 `git clone`，已存在时更新到上游 `main`，因此子仓库更新后不需要回父仓库做任何改动。`galaxea_a1z` SDK 同样单独 clone、跟随 `main`。初始化不会下载模型权重。
+bootstrap 固定 `openpi` 并应用采集集成补丁。`a1z_data_collection` 与内嵌 A1Z-T 不再是 submodule：目录不存在时脚本自动 `git clone`，已存在时更新到上游 `main`，因此子仓库更新后不需要回父仓库做任何改动。`galaxea_a1z` SDK 同样单独 clone、跟随 `main`。初始化不会下载模型权重。
 
 需要手动准备时，等价命令如下（三个目录都已加入 `.gitignore`）：
 
+升级已有工作区前，请先保存本地修改，并将原 `a1z-data-collect` 目录重命名为 `a1z_data_collection`；如果两个目录都存在，请先人工核对并处理。
+
 ```bash
-git clone --branch main https://github.com/userguide-galaxea/a1z-data-collect.git a1z-data-collect
-git clone --branch main https://github.com/userguide-galaxea/a1z-t.git a1z-data-collect/a1z-t
-git clone --branch main https://github.com/userguide-galaxea/galaxea_a1z.git a1z-data-collect/a1z-t/galaxea_a1z
+git clone --branch main https://github.com/userguide-galaxea/a1z_data_collection.git a1z_data_collection
+git clone --branch main https://github.com/userguide-galaxea/a1z-t.git a1z_data_collection/a1z-t
+git clone --branch main https://github.com/userguide-galaxea/galaxea_a1z.git a1z_data_collection/a1z-t/galaxea_a1z
 ```
 
 日常更新只需重跑 `python3 scripts/bootstrap.py`；它会把三处依赖更新到最新 `main`，反向应用旧补丁、再重放集成补丁。
 
-**当前测试过的版本**记录在 [versions.json](versions.json)：`a1z-data-collect` `3ff87bf3f341240ea719781a69c3b0f1b2dcd4f9`、A1Z-T `61f19bb0af7194b77a22991b795e389550815bf8`、SDK `156af498a947a830ca38efff4dd08fd2da96a200`。若更新的 `main` 出现补丁冲突或兼容问题，可整体回退到通过 π0.5 源码集成检查的该组合：
+**当前测试过的版本**记录在 [versions.json](versions.json)：`a1z_data_collection` `3ff87bf3f341240ea719781a69c3b0f1b2dcd4f9`、A1Z-T `61f19bb0af7194b77a22991b795e389550815bf8`、SDK `156af498a947a830ca38efff4dd08fd2da96a200`。若更新的 `main` 出现补丁冲突或兼容问题，可整体回退到通过 π0.5 源码集成检查的该组合：
 
 ```bash
 python3 scripts/bootstrap.py --tested
 python3 scripts/verify_workspace.py
 ```
 
-只回退 A1Z-T（`a1z-data-collect` 仍跟随 `main`）时改用 `--tested-a1z-t`。重新运行不带参数的 bootstrap 可切回 `main`。
+只回退 A1Z-T（`a1z_data_collection` 仍跟随 `main`）时改用 `--tested-a1z-t`。重新运行不带参数的 bootstrap 可切回 `main`。
 
 **单独锁定某个历史提交**时，先运行 `python3 scripts/bootstrap.py`，再手动切换该组件：
 
 ```bash
-git -C a1z-data-collect checkout <commit>        # 或 a1z-data-collect/a1z-t
+git -C a1z_data_collection checkout <commit>        # 或 a1z_data_collection/a1z-t
 ```
 
 手动切换后不要再运行 `bootstrap.py`（它会按所选模式重新检出），改用 `pip install -e` 重装受影响组件并运行 `verify_workspace.py` 确认。
@@ -123,7 +125,7 @@ conda activate pi05-robot
 export A1Z_PYTHON="$CONDA_PREFIX/bin/python"
 export ARM_MODE=single   # 双臂改为 dual
 mkdir -p "$HOME/a1z-local"
-cp -n a1z-data-collect/a1z-t/teleop_app/config.yaml "$HOME/a1z-local/a1z-t.yaml"
+cp -n a1z_data_collection/a1z-t/teleop_app/config.yaml "$HOME/a1z-local/a1z-t.yaml"
 cp -n "configs/collect_${ARM_MODE}.example.yaml" "$HOME/a1z-local/collect_${ARM_MODE}.yaml"
 python scripts/check_devices.py --list-can
 nano "$HOME/a1z-local/a1z-t.yaml"
@@ -138,7 +140,7 @@ python scripts/preview_cameras.py --config "$A1Z_COLLECT_CONFIG" --check-only --
 
 在 YAML 填写真实任务文本、保存目录（建议绝对路径）、`task_name`、`num_episodes`、Leader 串口、Follower CAN、相机路径；`leader_config_path` 填本地 a1z-t YAML 的绝对路径，按硬件选择 EVT／PVT。single 使用 `head`、`wrist`，dual 保留模板的三路字段；预览分别显示 Head／Wrist 和 Head／Left Wrist／Right Wrist。双臂需要两个独立 Leader 串口。
 
-本次验证的 A1Z-T `main`（`61f19bb`）默认加载 PVT，固定回退版本默认加载 EVT。切换版本后，从所选版本复制 `a1z-data-collect/a1z-t/config.yaml` 到该目录外，按实际 Leader 设置 `a1z_t_version`，并用下面的 `--check` 确认加载的配置。
+本次验证的 A1Z-T `main`（`61f19bb`）默认加载 PVT，固定回退版本默认加载 EVT。切换版本后，从所选版本复制 `a1z_data_collection/a1z-t/config.yaml` 到该目录外，按实际 Leader 设置 `a1z_t_version`，并用下面的 `--check` 确认加载的配置。
 
 `can0`／`can1` 是接口名，不代表左右臂。设备未使能时，沿接线确认物理对应，将发现的串号填入 `hardware_checks.can_adapter_serials`：single 用 `single`，dual 用 `left`／`right`，必须与采集和推理的角色一致。串号为空或不匹配会拒绝启动。无串号的 CAN 硬件可显式设为 `null`，此时需自行固定接口名并核实接线。程序不会自动识别物理左右，也不会自动交换通道。
 
@@ -169,7 +171,7 @@ bash scripts/collect.sh "$ARM_MODE"
 
 ```bash
 read -r -p '已保存的 episode_N.hdf5 完整路径: ' A1Z_EPISODE
-python a1z-data-collect/tools/inspect_episode.py "$A1Z_EPISODE"
+python a1z_data_collection/tools/inspect_episode.py "$A1Z_EPISODE"
 ```
 
 该工具只读数据并导出各路 MP4，不控制机械臂。确认 single 两路／dual 三路齐全、对应正确、操作完整且同步；任务文本真实，状态／动作 7／14 维，关节弧度、夹爪 `[0,1]`。检查首批及批量数据的开头、中间、结尾；失败片段不混入训练。
